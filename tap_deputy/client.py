@@ -96,6 +96,7 @@ class DeputyClient():
         # DP: needed by sagedata to keep state of changing refresh token        
         config["endpoint"] = self.__domain
         secret = {
+            "state" : {"oauth2_redirect_uri": self.__redirect_uri},
             "raw_credentials": config
         }
 
