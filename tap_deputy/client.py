@@ -1,5 +1,6 @@
 from datetime import timedelta
 import backoff
+import json
 import requests
 
 from singer import metrics, get_logger
@@ -83,10 +84,23 @@ class DeputyClient():
         # pad by 10 seconds for clock drift
         self.__expires_at = now() + timedelta(seconds=data['expires_in'] - 10)
 
-        utils.write_config(self.__config_path,
-                           {"refresh_token": self.__refresh_token,
-                            "access_token": self.__access_token,
-                            "expires_at": strftime(self.__expires_at)})
+        config = {
+            "refresh_token": self.__refresh_token,
+            "access_token": self.__access_token,
+            'expires_at': strftime(self.__expires_at)
+        }
+        
+        utils.write_config(self.__config_path, config)
+
+        
+        # DP: needed by sagedata to keep state of changing refresh token        
+        config["endpoint"] = self.__domain
+        secret = {
+            "raw_credentials": config
+        }
+
+        metric = {"type": "secret", "value": secret, "tags": "tap-secret"}
+        LOGGER.info('METRIC: %s', json.dumps(metric))
 
     @backoff.on_exception(backoff.expo,
                           (Server401TokenExpiredError, Server5xxError, ConnectionError),
