@@ -87,16 +87,15 @@ class DeputyClient():
         config = {
             "refresh_token": self.__refresh_token,
             "access_token": self.__access_token,
-            'expires_at': strftime(self.__expires_at)
+            'expires_at': strftime(self.__expires_at),
         }
-        
+
         utils.write_config(self.__config_path, config)
 
-        
-        # DP: needed by sagedata to keep state of changing refresh token        
+
+        # DP: needed by sagedata to keep track of the changing refresh token
         config["endpoint"] = self.__domain
         secret = {
-            "state" : {"oauth2_redirect_uri": self.__redirect_uri},
             "raw_credentials": config
         }
 
